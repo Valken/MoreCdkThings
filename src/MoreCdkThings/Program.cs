@@ -10,7 +10,7 @@ namespace MoreCdkThings
         public static void Main(string[] args)
         {
             var app = new App();
-            new MoreCdkThingsStack(app, "MoreCdkThingsStack", new StackProps
+            _ = new MoreCdkThingsStack(app, "MoreCdkThingsStack", new StackProps
             {
                 // If you don't specify 'env', this stack will be environment-agnostic.
                 // Account/Region-dependent features and context lookups will not work,
