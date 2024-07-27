@@ -34,7 +34,6 @@ namespace MoreCdkThings
                 Stream = StreamViewType.NEW_AND_OLD_IMAGES
             });
             
-            
             // Import a DynamoDB table from a CloudFormation export
             var tableArn = Fn.ImportValue("JobManager-JobTableArn");
             var importedTable = Table.FromTableArn(this, "ImportedTable", tableArn);
@@ -50,6 +49,8 @@ namespace MoreCdkThings
             {
                 StartingPosition = StartingPosition.TRIM_HORIZON
             }));
+            
+            var thingApi = new ThingApi(this, "ThingApi", table);
         }
     }
 }
