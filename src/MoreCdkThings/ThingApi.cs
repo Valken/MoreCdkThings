@@ -33,17 +33,18 @@ public class ThingApi : Construct
                 RequestTemplates = new Dictionary<string, string>
                 {
                     ["application/json"] = $$"""
-                                           {
-                                            "TableName": {{table.TableName}},
-                                            "Key": {
-                                                "Id": {
-                                                    "S": "$input.params('id')"
-                                                },
-                                                "SortKey": {
-                                                    "S": "$input.params('sortkey')"
+                                             {
+                                                "TableName": "{{table.TableName}}",
+                                                    "Key": {
+                                                    "Id": {
+                                                        "S": "$input.params('id')"
+                                                    },
+                                                    "SortKey": {
+                                                        "S": "$input.params('sortkey')"
+                                                    }
                                                 }
-                                           }
-                                           """
+                                             }
+                                             """
                 },
                 IntegrationResponses =
                 [
@@ -54,6 +55,7 @@ public class ThingApi : Construct
                 ]
             }
         });
-        api.Root.ResourceForPath("stuff/{id}/{sortkey}").AddMethod("GET", dynamodbIntegration);
+        var methodOptions = new MethodOptions {MethodResponses = [new MethodResponse {StatusCode = "200"}]};
+        api.Root.ResourceForPath("stuff/{id}/{sortkey}").AddMethod("GET", dynamodbIntegration, methodOptions);
     }
 }

@@ -9,6 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLambda", "TestLambda\Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLambda.Tests", "TestLambda.Tests\TestLambda.Tests.csproj", "{82B2F421-6EDD-4B24-85B8-AE71814F72EF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{5144CCF8-9F2D-450F-A844-C28B59FB1B38}"
+	ProjectSection(SolutionItems) = preProject
+		..\cdk.json = ..\cdk.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -1,13 +1,15 @@
+using System;
 using Amazon.CDK;
 using Amazon.CDK.AWS.DynamoDB;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.Lambda.EventSources;
 using Amazon.CDK.AWS.SQS;
 using Constructs;
+using Attribute = Amazon.CDK.AWS.DynamoDB.Attribute;
 
 namespace MoreCdkThings
 {
-    public class MoreCdkThingsStack : Stack
+    public sealed class MoreCdkThingsStack : Stack
     {
         internal MoreCdkThingsStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
@@ -39,11 +41,13 @@ namespace MoreCdkThings
             var importedTable = Table.FromTableArn(this, "ImportedTable", tableArn);
             
             // Define a Lambda function
+            var artifactPath = (string)Node.TryGetContext("artifactpath");
+            Console.WriteLine($"Artifact path is {artifactPath}");
             var lambdaFunction = new Function(this, "MyFirstLambda", new FunctionProps
             {
                 Runtime = Runtime.DOTNET_8,
                 Handler = "TestLambda::TestLambda.Function::FunctionHandler",
-                Code = Code.FromAsset("src/TestLambda/bin/Debug/net8.0")
+                Code = Code.FromAsset( string.IsNullOrEmpty(artifactPath) ? "src/TestLambda/bin/Debug/net8.0" : $"{artifactPath}/TestLambda")
             });
             lambdaFunction.AddEventSource(new DynamoEventSource(table, new DynamoEventSourceProps
             {
