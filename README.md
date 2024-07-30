@@ -30,5 +30,7 @@ dotnet publish src/TestLambda \
 
 Deploy the CDK app from published directory
 ```bash
-cdk deploy --app 'dotnet publish/CDK/MoreCdkThings.dll' --context artifactpath='./publish/' 
+cdk deploy \
+  --app 'dotnet publish/CDK/MoreCdkThings.dll' \
+  --context artifactpath='./publish/' 
 ```

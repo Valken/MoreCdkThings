@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.DynamoDBEvents;
 
@@ -13,7 +14,7 @@ public class Function
         {
             context.Logger.LogLine($"Event ID: {ev.EventID}");
             context.Logger.LogLine($"Event Name: {ev.EventName}");
-            context.Logger.LogLine($"DynamoDB Record: {ev.Dynamodb}");
+            context.Logger.LogInformation(JsonSerializer.Serialize(ev));
         }
         return "Hello World".ToUpper();
     }

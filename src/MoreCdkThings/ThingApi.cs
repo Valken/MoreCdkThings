@@ -15,6 +15,7 @@ public class ThingApi : Construct
             RestApiName = "CdkThingApi",
             Description = "This is a CDK thing API"
         });
+
         var dynamodbIntegration = new AwsIntegration(new AwsIntegrationProps
         {
             Service = "dynamodb",
@@ -50,7 +51,27 @@ public class ThingApi : Construct
                 [
                     new IntegrationResponse
                     {
-                        StatusCode = "200"
+                        StatusCode = "200",
+                        ResponseTemplates = new Dictionary<string, string>
+                        {
+                            ["application/json"] = """
+                                                   #set($inputRoot = $input.path('$')) 
+                                                   {
+                                                   #foreach($key in $inputRoot.Item.keySet())
+                                                       #set($value = $inputRoot.Item.get($key))
+                                                       "$key":
+                                                       ## #if($value.S), #if($value.N), #if($value.BOOL) etc *should* be enough, 
+                                                       ## but I needed to be more explicit. Apparently fixed in version 2?
+                                                       #if($value.containsKey('S')) "$value.S"
+                                                       #elseif($value.containsKey('N')) $value.N
+                                                       #elseif($value.containsKey('BOOL')) $value.BOOL
+                                                       #else null
+                                                       #end
+                                                       #if($foreach.hasNext),#end
+                                                   #end
+                                                   }
+                                                   """
+                        }
                     }
                 ]
             }
