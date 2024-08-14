@@ -112,7 +112,18 @@ namespace MoreCdkThings
             });
              
             var wait = new Wait(this, "WaitFromPath", new WaitProps {
-                Time = WaitTime. SecondsPath("$.waitSeconds")
+                Time = WaitTime.SecondsPath("$.waitSeconds")
+            });
+            
+            var ddbPut = new DynamoPutItem(this, "PutItem", new DynamoPutItemProps {
+                Table = table,
+                Item = new Dictionary<string, DynamoAttributeValue>
+                {
+                    ["Id"] = DynamoAttributeValue.FromString("123"),
+                    ["SortKey"] = DynamoAttributeValue.FromString("abc"),
+                    ["Message"] = DynamoAttributeValue.FromString(JsonPath.StringAt("$.message"))
+                },
+                ResultPath = "$.ddb"
             });
             
             var publishSuccess = new Choice(this, "Is this a success?")
@@ -128,7 +139,8 @@ namespace MoreCdkThings
                     convertToSeconds
                         .Next(createMessage)
                         .Next(publishMessage)
-                        .Next(publishSuccess))
+                        .Next(ddbPut)
+                        .Next(publishSuccess)) // Need to figure out how to model choice states a bit nicer here.
                         //.Next(wait))
             });
         }
