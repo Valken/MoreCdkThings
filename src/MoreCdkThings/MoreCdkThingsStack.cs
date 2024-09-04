@@ -46,7 +46,7 @@ namespace MoreCdkThings
             var importedTable = Table.FromTableArn(this, "ImportedTable", tableArn);
 
             // Define a Lambda function
-            var artifactPath = (string) Node.TryGetContext("artifactpath");
+            var artifactPath = (string)Node.TryGetContext("artifactpath");
             Console.WriteLine($"Artifact path is {artifactPath}");
             var lambdaFunction = new Function(this, "MyFirstLambda", new FunctionProps
             {
@@ -73,19 +73,20 @@ namespace MoreCdkThings
             _ = new StateMachine(this, "DoesNothingStateMachine", new StateMachineProps
             {
                 DefinitionBody = DefinitionBody.FromChainable(new Pass(this, "Hello", new PassProps
+                {
+                    Result = new Result(new Dictionary<string, object>
                     {
-                        Result = new Result(new Dictionary<string, object>
-                        {
-                            ["Hello"] = "World"
-                        })
-                    }).Next(new Wait(this, "Wait", new WaitProps
-                    {
-                        Time = WaitTime.Duration(Duration.Seconds(10))
-                    })).Next(new Succeed(this, "Succeed"))
+                        ["Hello"] = "World"
+                    })
+                }).Next(new Wait(this, "Wait", new WaitProps
+                {
+                    Time = WaitTime.Duration(Duration.Seconds(10))
+                })).Next(new Succeed(this, "Succeed"))
                 ),
             });
-            
-            var convertToSeconds = new EvaluateExpression(this, "Convert to seconds", new EvaluateExpressionProps {
+
+            var convertToSeconds = new EvaluateExpression(this, "Convert to seconds", new EvaluateExpressionProps
+            {
                 Expression = "$.waitMilliseconds / 1000",
                 ResultPath = "$.waitSeconds"
             }).AddCatch(new Fail(this, "Fail", new FailProps
@@ -97,25 +98,29 @@ namespace MoreCdkThings
                 // ErrorPath = null,
                 // StateName = null
             }));
-             
-            var createMessage = new EvaluateExpression(this, "Create message", new EvaluateExpressionProps {
+
+            var createMessage = new EvaluateExpression(this, "Create message", new EvaluateExpressionProps
+            {
                 // Note: this is a string inside a string.
                 Expression = "`Now waiting ${$.waitSeconds} seconds...`",
-                Runtime = Runtime. NODEJS_LATEST,
+                Runtime = Runtime.NODEJS_LATEST,
                 ResultPath = "$.message"
             });
-             
-            var publishMessage = new SnsPublish(this, "Publish message", new SnsPublishProps {
+
+            var publishMessage = new SnsPublish(this, "Publish message", new SnsPublishProps
+            {
                 Topic = new Topic(this, "cool-topic"),
                 Message = TaskInput.FromJsonPathAt("$.message"),
                 ResultPath = "$.sns"
             });
-             
-            var wait = new Wait(this, "WaitFromPath", new WaitProps {
+
+            var wait = new Wait(this, "WaitFromPath", new WaitProps
+            {
                 Time = WaitTime.SecondsPath("$.waitSeconds")
             });
-            
-            var ddbPut = new DynamoPutItem(this, "PutItem", new DynamoPutItemProps {
+
+            var ddbPut = new DynamoPutItem(this, "PutItem", new DynamoPutItemProps
+            {
                 Table = table,
                 Item = new Dictionary<string, DynamoAttributeValue>
                 {
@@ -125,7 +130,7 @@ namespace MoreCdkThings
                 },
                 ResultPath = "$.ddb"
             });
-            
+
             var publishSuccess = new Choice(this, "Is this a success?")
                 .When(Condition.NumberEquals("$.sns.SdkHttpMetadata.HttpStatusCode", 200), wait)
                 .Otherwise(new Fail(this, "FailPublish", new FailProps
@@ -133,15 +138,16 @@ namespace MoreCdkThings
                     Cause = "The message was not published",
                     Error = "MessageNotPublished"
                 }));
-             
-            _ = new StateMachine(this, "AnotherStateMachine", new StateMachineProps {
+
+            _ = new StateMachine(this, "AnotherStateMachine", new StateMachineProps
+            {
                 DefinitionBody = DefinitionBody.FromChainable(
                     convertToSeconds
                         .Next(createMessage)
                         .Next(publishMessage)
                         .Next(ddbPut)
                         .Next(publishSuccess)) // Need to figure out how to model choice states a bit nicer here.
-                        //.Next(wait))
+                                               //.Next(wait))
             });
         }
     }

@@ -38,6 +38,9 @@ namespace MoreCdkThings
 
                 // For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
             });
+
+            _ = new EcsStepFunctionStack(app, "EcsStepFunctionStack");
+
             app.Synth();
         }
     }

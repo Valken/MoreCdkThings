@@ -73,28 +73,7 @@ public class ThingApi : Construct
                 ]
             }
         });
-        var methodOptions = new MethodOptions {MethodResponses = [new MethodResponse {StatusCode = "200"}]};
+        var methodOptions = new MethodOptions { MethodResponses = [new MethodResponse { StatusCode = "200" }] };
         api.Root.ResourceForPath("stuff/{id}/{sortkey}").AddMethod("GET", dynamodbIntegration, methodOptions);
     }
 }
-
-#if false
-// This is the VTL template for the IntegrationResponse above, as it was before I had to format it.
-"""
-#set($inputRoot = $input.path('$')) 
-{
-#foreach($key in $inputRoot.Item.keySet())
-   #set($value = $inputRoot.Item.get($key))
-   "$key":
-   ## #if($value.S), #if($value.N), #if($value.BOOL) etc *should* be enough, 
-   ## but I needed to be more explicit. Apparently fixed in version 2?
-   #if($value.containsKey('S')) "$value.S"
-   #elseif($value.containsKey('N')) $value.N
-   #elseif($value.containsKey('BOOL')) $value.BOOL
-   #else null
-   #end
-   #if($foreach.hasNext),#end
-#end
-}
-"""
-#endif
