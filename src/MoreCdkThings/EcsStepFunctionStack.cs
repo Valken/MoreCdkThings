@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Amazon.CDK;
+using Amazon.CDK.AWS.AutoScaling;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECS;
+using Amazon.CDK.AWS.ServiceDiscovery;
 using Amazon.CDK.AWS.StepFunctions;
 using Amazon.CDK.AWS.StepFunctions.Tasks;
 using Constructs;
@@ -21,17 +23,26 @@ public class EcsStepFunctionStack : Stack
             EnableDnsHostnames = true,
             EnableDnsSupport = true,
             MaxAzs = 1,
-            SubnetConfiguration = [new SubnetConfiguration
-            {
-                CidrMask = 24,
-                Name = "Public",
-                SubnetType = SubnetType.PUBLIC
-            }],
+            SubnetConfiguration =
+            [
+                new SubnetConfiguration
+                {
+                    CidrMask = 24,
+                    Name = "Public",
+                    SubnetType = SubnetType.PUBLIC
+                }
+            ],
             NatGateways = 0,
         });
         var cluster = new Cluster(this, "MyCluster", new ClusterProps
         {
-            Vpc = vpc
+            Vpc = vpc,
+            //EnableFargateCapacityProviders = true,
+            // DefaultCloudMapNamespace = new CloudMapNamespaceOptions
+            // {
+            //     Name = "ThingNamespace",
+            //     Type = NamespaceType.HTTP
+            // }
         });
 
         var fargateTaskDefinition = new FargateTaskDefinition(this, "SampleTaskDefinition");
@@ -48,23 +59,36 @@ public class EcsStepFunctionStack : Stack
             Logging = new AwsLogDriver(new AwsLogDriverProps
             {
                 StreamPrefix = "MyContainer"
-            }),
+            })
         });
+
+        // TODO: Figure out how to tell the EcsRunTask to use FARGATE_SPOT
 
         var ecsRunTask = new EcsRunTask(this, "runTask", new EcsRunTaskProps
         {
+            StateName = "Run a ping in Fargate",
             Cluster = cluster,
             LaunchTarget = new EcsFargateLaunchTarget(),
             TaskDefinition = fargateTaskDefinition,
             AssignPublicIp = true,
-            // ContainerOverrides = new IContainerOverride[]
-            // {
-            // }
-            // InputPath = null,
-            IntegrationPattern = IntegrationPattern.RUN_JOB
+            ContainerOverrides =
+            [
+                new ContainerOverride
+                {
+                    ContainerDefinition = fargateTaskDefinition.DefaultContainer!,
+                    Command =
+                    [
+                        "-c",
+                        "10",
+                        "www.google.com"
+                    ]
+                }
+            ],
+            //InputPath = null,
+            IntegrationPattern = IntegrationPattern.RUN_JOB,
         });
 
-        var stateMachine = new StateMachine(this, "MyStateMachine", new StateMachineProps
+        _ = new StateMachine(this, "MyStateMachine", new StateMachineProps
         {
             DefinitionBody = DefinitionBody.FromChainable(ecsRunTask)
         });
