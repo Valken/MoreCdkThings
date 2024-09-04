@@ -1,16 +1,21 @@
 using System.Collections.Generic;
 using Amazon.CDK;
-using Amazon.CDK.AWS.AutoScaling;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECS;
-using Amazon.CDK.AWS.ServiceDiscovery;
+using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.StepFunctions;
 using Amazon.CDK.AWS.StepFunctions.Tasks;
 using Constructs;
-using ContainerDefinition = Amazon.CDK.AWS.ECS.ContainerDefinition;
 using ContainerDefinitionOptions = Amazon.CDK.AWS.ECS.ContainerDefinitionOptions;
 
 namespace MoreCdkThings;
+
+// https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html
+// https://github.com/aws-samples/retryable-ecs-run-task-step-functions/blob/main/lib/construct/retryable-run-task.ts
+// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/example_task_definitions.html#example_task_definition-ping
+// https://docs.aws.amazon.com/step-functions/latest/dg/connect-ecs.html
+
+// Need to use Task Token to get output from an ECS task, so will build a custom container that handles that next
 
 public class EcsStepFunctionStack : Stack
 {
@@ -58,7 +63,13 @@ public class EcsStepFunctionStack : Stack
             },
             Logging = new AwsLogDriver(new AwsLogDriverProps
             {
-                StreamPrefix = "MyContainer"
+                StreamPrefix = "MyContainer",
+                LogGroup = new LogGroup(this, "MyLogGroup", new LogGroupProps
+                {
+                    LogGroupName = "EcsContainerLogs",
+                    Retention = RetentionDays.ONE_WEEK,
+                    RemovalPolicy = RemovalPolicy.DESTROY
+                })
             })
         });
 
@@ -76,10 +87,10 @@ public class EcsStepFunctionStack : Stack
                 new ContainerOverride
                 {
                     ContainerDefinition = fargateTaskDefinition.DefaultContainer!,
-                    Command =
+                    Command = 
                     [
                         "-c",
-                        "10",
+                        "10",//JsonPath.StringAt("$.count"),
                         "www.google.com"
                     ]
                 }
