@@ -152,9 +152,16 @@ public class EcsStepFunctionStack : Stack
             ResultPath = "$.WorkerOutput",
         });
 
+        var parallel = new Parallel(this, "ParallelTasks", new ParallelProps
+        {
+            StateName = "Run tasks in parallel"
+        });
+        parallel.Branch(ecsRunTask);
+        parallel.Branch(workerRunTask);
+
         var stateMachine = new StateMachine(this, "MyStateMachine", new StateMachineProps
         {
-            DefinitionBody = DefinitionBody.FromChainable(ecsRunTask.Next(workerRunTask))
+            DefinitionBody = DefinitionBody.FromChainable(parallel),
         });
         stateMachine.GrantTaskResponse(workerTaskDefinition.TaskRole);
     }
