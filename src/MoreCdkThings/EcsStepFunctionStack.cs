@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
+using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.StepFunctions;
@@ -50,6 +51,11 @@ public class EcsStepFunctionStack : Stack
             // }
         });
 
+        // var otherVpc = Vpc.FromLookup(this, "OtherVpc", new VpcLookupOptions
+        // {
+        //     IsDefault = true
+        // });
+
         var fargateTaskDefinition = new FargateTaskDefinition(this, "SampleTaskDefinition");
         fargateTaskDefinition.AddContainer("MyContainer", new ContainerDefinitionOptions()
         {
@@ -87,21 +93,69 @@ public class EcsStepFunctionStack : Stack
                 new ContainerOverride
                 {
                     ContainerDefinition = fargateTaskDefinition.DefaultContainer!,
-                    Command = 
+                    Command =
                     [
                         "-c",
-                        "10",//JsonPath.StringAt("$.count"),
+                        "10", //JsonPath.StringAt("$.count"),
                         "www.google.com"
                     ]
                 }
             ],
             //InputPath = null,
             IntegrationPattern = IntegrationPattern.RUN_JOB,
+            ResultPath = JsonPath.DISCARD
         });
 
-        _ = new StateMachine(this, "MyStateMachine", new StateMachineProps
+        var workerTaskDefinition = new FargateTaskDefinition(this, "WorkerTaskDefinition");
+        workerTaskDefinition.AddContainer("TaskWorker", new ContainerDefinitionOptions
         {
-            DefinitionBody = DefinitionBody.FromChainable(ecsRunTask)
+            Image = ContainerImage.FromAsset("src/WorkerTask", new AssetImageProps
+            {
+                Platform = Platform_.LINUX_AMD64,
+                IgnoreMode = IgnoreMode.DOCKER
+            }),
+            Logging = new AwsLogDriver(new AwsLogDriverProps
+            {
+                StreamPrefix = "TaskWorker",
+                LogGroup = new LogGroup(this, "TaskWorkerLogGroup", new LogGroupProps
+                {
+                    LogGroupName = "TaskWorkerLogs",
+                    Retention = RetentionDays.ONE_WEEK,
+                    RemovalPolicy = RemovalPolicy.DESTROY
+                })
+            })
         });
+
+        var workerRunTask = new EcsRunTask(this, "WorkerRunTask", new EcsRunTaskProps
+        {
+            StateName = "Run a worker task",
+            Cluster = cluster,
+            LaunchTarget = new EcsFargateLaunchTarget(),
+            TaskDefinition = workerTaskDefinition,
+            IntegrationPattern = IntegrationPattern.WAIT_FOR_TASK_TOKEN,
+            AssignPublicIp = true,
+            ContainerOverrides =
+            [
+                new ContainerOverride
+                {
+                    ContainerDefinition = workerTaskDefinition.DefaultContainer!,
+                    Environment =
+                    [
+                        new TaskEnvironmentVariable
+                        {
+                            Name = "TASK_TOKEN",
+                            Value = JsonPath.TaskToken
+                        }
+                    ],
+                }
+            ],
+            ResultPath = "$.WorkerOutput",
+        });
+
+        var stateMachine = new StateMachine(this, "MyStateMachine", new StateMachineProps
+        {
+            DefinitionBody = DefinitionBody.FromChainable(ecsRunTask.Next(workerRunTask))
+        });
+        stateMachine.GrantTaskResponse(workerTaskDefinition.TaskRole);
     }
 }
