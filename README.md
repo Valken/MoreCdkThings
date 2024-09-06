@@ -1,10 +1,22 @@
-# Welcome to your CDK C# project!
+# Welcome to my CDK and AWS C# messing about project!
 
-This is a blank project for CDK development with C#.
+This is a project I'm using to test out CDK and assorted AWS services using C#.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
+## EcsStepFunctionStack 
+
+This creates a Step Function that invokes Fargate Tasks, one of which uses TaskToken to callback to current step function invocation.
+
+The project for the ECS Task is `WorkerTask`
+
 It uses the [.NET CLI](https://docs.microsoft.com/dotnet/articles/core/) to compile and execute your project.
+
+## MoreCdkThingsStack
+
+This one creates a DynamoDB Table and a SQS Fifo queue. A lambda handles DDB stream events and sends a message to the SQS queue.
+
+There's also an API construct in there that integrates directly with DynamoDB and uses VTL to transform the output
 
 ## Useful commands
 
