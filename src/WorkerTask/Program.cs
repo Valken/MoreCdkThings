@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Amazon.StepFunctions;using Amazon.StepFunctions.Model;
+using Amazon.StepFunctions;
+using Amazon.StepFunctions.Model;
 
 Console.WriteLine("Hello, World!");
 
@@ -22,7 +23,7 @@ Console.WriteLine(done ? "Task sent successfully." : "Task failed to send.");
 async Task<bool> SendTaskSuccessAsync(string taskToken, string taskResponse)
 {
     var response = await amazonStepFunctions.SendTaskSuccessAsync(new SendTaskSuccessRequest
-        {TaskToken = taskToken, Output = taskResponse});
-    
+    { TaskToken = taskToken, Output = taskResponse });
+
     return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
 }

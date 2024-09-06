@@ -3,11 +3,17 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.ECS;
+using Amazon.CDK.AWS.Events;
+using Amazon.CDK.AWS.Events.Targets;
 using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.StepFunctions;
 using Amazon.CDK.AWS.StepFunctions.Tasks;
 using Constructs;
 using ContainerDefinitionOptions = Amazon.CDK.AWS.ECS.ContainerDefinitionOptions;
+using ContainerOverride = Amazon.CDK.AWS.StepFunctions.Tasks.ContainerOverride;
+using LogGroupProps = Amazon.CDK.AWS.Logs.LogGroupProps;
+using RuleProps = Amazon.CDK.AWS.Events.RuleProps;
+using TaskEnvironmentVariable = Amazon.CDK.AWS.StepFunctions.Tasks.TaskEnvironmentVariable;
 
 namespace MoreCdkThings;
 
@@ -164,5 +170,33 @@ public class EcsStepFunctionStack : Stack
             DefinitionBody = DefinitionBody.FromChainable(parallel),
         });
         stateMachine.GrantTaskResponse(workerTaskDefinition.TaskRole);
+
+        // How about using EventBridge to invoke an ECS Task and be able pass params from event body?
+        var rule = new Rule(this, "EcsRunRule", new RuleProps
+        {
+            EventPattern = new EventPattern
+            {
+                DetailType = ["EcsTaskThing"],
+            }
+        });
+        rule.AddTarget(new EcsTask(new EcsTaskProps
+        {
+            Cluster = cluster,
+            TaskDefinition = fargateTaskDefinition,
+            TaskCount = 1,
+            SubnetSelection = new SubnetSelection
+            {
+                SubnetType = SubnetType.PUBLIC
+            },
+            AssignPublicIp = true,
+            ContainerOverrides =
+            [
+                new Amazon.CDK.AWS.Events.Targets.ContainerOverride
+                {
+                    ContainerName = fargateTaskDefinition.DefaultContainer!.ContainerName,
+                    Command = ["-c", $"{EventField.FromPath($"$.detail.count")}", EventField.FromPath("$.detail.url")]
+                }
+            ]
+        }));
     }
 }
