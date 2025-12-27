@@ -40,6 +40,7 @@ namespace MoreCdkThings
             });
 
             _ = new EcsStepFunctionStack(app, "EcsStepFunctionStack");
+            _ = new ECSStuff(app, "EcsStuff");
 
             app.Synth();
         }

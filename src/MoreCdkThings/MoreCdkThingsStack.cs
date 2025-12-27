@@ -50,11 +50,12 @@ namespace MoreCdkThings
             Console.WriteLine($"Artifact path is {artifactPath}");
             var lambdaFunction = new Function(this, "MyFirstLambda", new FunctionProps
             {
-                Runtime = Runtime.DOTNET_8,
+                Runtime = Runtime.DOTNET_10,
                 Handler = "TestLambda::TestLambda.Function::FunctionHandler",
                 Code = Code.FromAsset(string.IsNullOrEmpty(artifactPath)
-                    ? "src/TestLambda/bin/Debug/net8.0"
-                    : $"{artifactPath}/TestLambda"),
+                     ? "src/TestLambda/bin/Debug/net10.0"
+                     : $"{artifactPath}/TestLambda"),
+                //Code = Code.FromAssetImage("nginx"),
                 MemorySize = 256,
                 Timeout = Duration.Seconds(30),
                 Environment = new Dictionary<string, string>()

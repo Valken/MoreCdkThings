@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerTask", "WorkerTask\WorkerTask.csproj", "{7B08C725-9B39-47CE-A153-7E2C879DE5B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoreCdkThings.Tests", "MoreCdkThings.Tests\MoreCdkThings.Tests.csproj", "{EC156B73-F7DF-41B7-9D10-0B6B670BE934}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,5 +79,17 @@ Global
 		{7B08C725-9B39-47CE-A153-7E2C879DE5B0}.Release|x64.Build.0 = Release|Any CPU
 		{7B08C725-9B39-47CE-A153-7E2C879DE5B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{7B08C725-9B39-47CE-A153-7E2C879DE5B0}.Release|x86.Build.0 = Release|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Debug|x64.Build.0 = Debug|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Debug|x86.Build.0 = Debug|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Release|x64.ActiveCfg = Release|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Release|x64.Build.0 = Release|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Release|x86.ActiveCfg = Release|Any CPU
+		{EC156B73-F7DF-41B7-9D10-0B6B670BE934}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
